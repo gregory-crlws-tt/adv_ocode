@@ -9,18 +9,47 @@ let stopwatch: Stopwatch = Stopwatch.StartNew()
 // Split the data by newlines once
 let lines: string array = data.Split([|'\n'|], StringSplitOptions.RemoveEmptyEntries)
 
-// Pre-allocate arrays for left and right values
-// let values: int array = Array.zeroCreate<int> lines.Length
-
-let safe_reports: int  = 0  
+let mutable safe_reports: int = 0  
 for i: int32 in 0..lines.Length-1 do
     // Split the line only once
-    // If you know the delimiter is three spaces, you can do:
     let parts = lines.[i].Split([|" "|], StringSplitOptions.None)
+                |> Array.map int
     
-    let mutable first = 0
-    for i in 0..parts.Length-1 do
-        if int(parts.[i]) > first then
-            first <- int(parts.[i])
+    let ascending = parts |> Array.sort
+    let descending = parts |> Array.sortByDescending id
+
+    if parts = ascending then
+        let isSafeAscending = 
+            ascending
+            |> Array.pairwise
+            |> Array.forall (fun (a, b) -> b - a <= 3 && b - a >= 1)
+
+        if isSafeAscending then
+            // printfn "\n"
+            // printfn "Parts asc: %A" parts
+            // printfn "Sorted Parts asc: %A" ascending
+            safe_reports <- safe_reports + 1
+
+    if parts = descending then
+        let isSafeDescending = 
+            descending
+            |> Array.pairwise
+            |> Array.forall (fun (a, b) -> a - b <= 3 && a - b >= 1)
+
+        if isSafeDescending then
+            // printfn "\n"
+            // printfn "Parts desc: %A" parts
+            // printfn "Sorted Parts desc: %A" descending
+            safe_reports <- safe_reports + 1
+
+stopwatch.Stop()
+
+printfn "Elapsed time: %A microseconds" stopwatch.Elapsed.Microseconds
+
+printfn "Safe reports: %A" safe_reports
+
+
+
+
         
 
